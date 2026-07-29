@@ -1,0 +1,36 @@
+name: Build Windows Installer
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+
+jobs:
+  build-windows:
+    runs-on: windows-2022
+    env:
+      ELECTRON_MIRROR: https://github.com/castlabs/electron-releases/releases/download/
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm install --legacy-peer-deps
+
+      - name: Build the Windows installer
+        run: npx electron-forge make
+
+      - name: Upload the installer as a downloadable artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: KenkuFM-FocusMode-Windows
+          path: |
+            out/make/**/*.exe
+            out/make/**/*.nupkg
+            out/make/**/RELEASES
+          if-no-files-found: error
