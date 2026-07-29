@@ -24,9 +24,10 @@ import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import FullscreenRoundedIcon from "@mui/icons-material/FullscreenRounded";
 import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
+import OpenInNewRoundedIcon from "@mui/icons-material/OpenInNewRounded";
 
 import { RootState } from "../../app/store";
-import { moveTab, Tab } from "./tabsSlice";
+import { moveTab, markPoppedOut, selectTab, Tab } from "./tabsSlice";
 import { setFocusMode, togglePanel } from "../settings/settingsSlice";
 
 import { SortableItem } from "../../common/SortableItem";
@@ -39,6 +40,23 @@ export function TabBar() {
   const dispatch = useDispatch();
 
   const tabs = useSelector((state: RootState) => state.tabs);
+  const player = useSelector((state: RootState) => state.player);
+
+  // The always-present site view can't be popped out; only extra tabs (e.g. the
+  // VTT tab) can. A popped-out tab's chip is hidden until it re-docks.
+  const canPopout =
+    tabs.selectedTab != null && tabs.selectedTab !== player.tab.id;
+
+  function handlePopout() {
+    const id = tabs.selectedTab;
+    if (id == null || id === player.tab.id) {
+      return;
+    }
+    window.kenku.popoutBrowserView(id);
+    dispatch(markPoppedOut(id));
+    // Bring the main window back to the site view now that this tab is elsewhere.
+    dispatch(selectTab(player.tab.id));
+  }
 
   const pointerSensor = useSensor(PointerSensor, {
     activationConstraint: { distance: 10 },
@@ -102,7 +120,9 @@ export function TabBar() {
     }
   }, [smallTabs, tabs.tabs.allIds]);
 
-  const items = tabs.tabs.allIds.map((id) => tabs.tabs.byId[id]);
+  const items = tabs.tabs.allIds
+    .map((id) => tabs.tabs.byId[id])
+    .filter((tab) => tab && !tab.poppedOut);
 
   function getTabComponent(tab: Tab, shadow = false) {
     return (
@@ -176,6 +196,17 @@ export function TabBar() {
         </DndContext>
       </List>
       <Box sx={{ WebkitAppRegion: "no-drag", display: "flex" }}>
+        {canPopout && (
+          <Tooltip title="Pop out this tab into its own window">
+            <IconButton
+              aria-label="Pop out tab"
+              size="small"
+              onClick={handlePopout}
+            >
+              <OpenInNewRoundedIcon fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        )}
         <Tooltip title="Show/hide controls">
           <IconButton
             aria-label="Toggle controls panel"

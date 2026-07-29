@@ -74,4 +74,8 @@ export class BrowserViewManagerPreload {
   reload(id: number) {
     ipcRenderer.send("BROWSER_VIEW_RELOAD", id);
   }
+
+  popoutBrowserView(id: number) {
+    ipcRenderer.send("BROWSER_VIEW_POPOUT_BROWSER_VIEW", id);
+  }
 }

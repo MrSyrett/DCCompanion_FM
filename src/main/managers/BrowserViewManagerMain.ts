@@ -10,6 +10,8 @@ export class BrowserViewManagerMain {
   window: BrowserWindow;
   views: Record<number, WebContentsView>;
   topView: WebContentsView;
+  /** Separate OS windows for popped-out views, keyed by view id. */
+  popWindows: Record<number, BrowserWindow> = {};
 
   constructor(window: BrowserWindow) {
     this.window = window;
@@ -37,6 +39,7 @@ export class BrowserViewManagerMain {
     ipcMain.on("BROWSER_VIEW_GO_FORWARD", this._handleGoForward);
     ipcMain.on("BROWSER_VIEW_GO_BACK", this._handleGoBack);
     ipcMain.on("BROWSER_VIEW_RELOAD", this._handleReload);
+    ipcMain.on("BROWSER_VIEW_POPOUT_BROWSER_VIEW", this._handlePopout);
 
     this.window.on("resize", this._resizeListener);
   }
@@ -64,6 +67,7 @@ export class BrowserViewManagerMain {
     ipcMain.off("BROWSER_VIEW_GO_FORWARD", this._handleGoForward);
     ipcMain.off("BROWSER_VIEW_GO_BACK", this._handleGoBack);
     ipcMain.off("BROWSER_VIEW_RELOAD", this._handleReload);
+    ipcMain.off("BROWSER_VIEW_POPOUT_BROWSER_VIEW", this._handlePopout);
 
     this.window.off("resize", this._resizeListener);
     this.removeAllBrowserViews();
@@ -167,6 +171,9 @@ export class BrowserViewManagerMain {
 
   _handleReload = (_: Electron.IpcMainEvent, id: number) => this.reload(id);
 
+  _handlePopout = (event: Electron.IpcMainEvent, id: number) =>
+    this.popoutBrowserView(event, id);
+
   /**
    * Create a new browser view and attach it to the current window
    * @param url Initial URL
@@ -212,6 +219,7 @@ export class BrowserViewManagerMain {
 
   removeBrowserView(id: number) {
     if (this.views[id]) {
+      this._destroyPopWindow(id);
       if (this.topView === this.views[id]) {
         this.topView = undefined;
       }
@@ -224,11 +232,28 @@ export class BrowserViewManagerMain {
 
   removeAllBrowserViews() {
     for (let id in this.views) {
+      this._destroyPopWindow(Number(id));
       this.views[id].webContents.close({ waitForBeforeUnload: false });
       this.window.contentView.removeChildView(this.views[id]);
       (this.views[id].webContents as any).destroy();
       this.topView = undefined;
       delete this.views[id];
+    }
+  }
+
+  /**
+   * Tear down the pop-out window for a view (if any) without triggering the
+   * re-dock path — used when the underlying view is being destroyed anyway.
+   */
+  _destroyPopWindow(id: number) {
+    const pop = this.popWindows[id];
+    if (pop) {
+      delete this.popWindows[id];
+      pop.removeAllListeners("close");
+      pop.removeAllListeners("resize");
+      if (!pop.isDestroyed()) {
+        pop.destroy();
+      }
     }
   }
 
@@ -243,9 +268,86 @@ export class BrowserViewManagerMain {
 
   showBrowserView(id: number) {
     if (this.views[id]) {
+      // A popped-out view lives in its own OS window — don't yank it back into
+      // the main window just because its tab got selected.
+      if (this.popWindows[id]) {
+        return;
+      }
       this.window.contentView.addChildView(this.views[id]);
       this.topView = this.views[id];
     }
+  }
+
+  /**
+   * Detach a web view from the main window and give it its own OS window so it
+   * can live on a second monitor. Closing that window re-docks the view back
+   * into the main window and notifies the renderer via BROWSER_VIEW_POPPED_IN.
+   */
+  popoutBrowserView(_event: Electron.IpcMainEvent, id: number) {
+    const view = this.views[id];
+    if (!view) {
+      return;
+    }
+    // Already popped out — just focus the existing window.
+    if (this.popWindows[id]) {
+      if (!this.popWindows[id].isDestroyed()) {
+        this.popWindows[id].focus();
+      }
+      return;
+    }
+
+    // Detach from the main window.
+    if (this.topView === view) {
+      this.topView = undefined;
+    }
+    this.window.contentView.removeChildView(view);
+
+    const title =
+      view.webContents.getTitle() || "Dungeon Crawler's Companion";
+    const pop = new BrowserWindow({
+      width: 1280,
+      height: 800,
+      title,
+      backgroundColor: "#0d0d0f",
+      autoHideMenuBar: true,
+    });
+    this.popWindows[id] = pop;
+
+    pop.contentView.addChildView(view);
+
+    const fit = () => {
+      if (pop.isDestroyed()) {
+        return;
+      }
+      const [width, height] = pop.getContentSize();
+      view.setBounds({ x: 0, y: 0, width, height });
+    };
+    fit();
+    pop.on("resize", fit);
+
+    // When the popped-out window closes, re-dock the view into the main window.
+    // This must happen on "close" (before the window is destroyed) so the view's
+    // webContents survives — otherwise it would be torn down with the window.
+    let redocked = false;
+    pop.on("close", () => {
+      if (redocked) {
+        return;
+      }
+      redocked = true;
+      try {
+        pop.contentView.removeChildView(view);
+      } catch (err) {
+        console.error(err);
+      }
+      if (!this.window.isDestroyed() && this.views[id]) {
+        this.window.contentView.addChildView(view);
+        this.topView = view;
+        this.window.webContents.send("BROWSER_VIEW_POPPED_IN", id);
+      }
+    });
+    pop.on("closed", () => {
+      delete this.popWindows[id];
+    });
   }
 
   setBrowserViewBounds(

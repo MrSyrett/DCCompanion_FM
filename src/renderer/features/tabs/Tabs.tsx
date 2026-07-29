@@ -8,6 +8,7 @@ import {
   decreaseTabPlayingMedia,
   editTab,
   increaseTabPlayingMedia,
+  markPoppedIn,
   removeTab,
   selectTab,
 } from "./tabsSlice";
@@ -154,6 +155,13 @@ export function Tabs() {
       );
       dispatch(selectTab(id));
     });
+    window.kenku.on("BROWSER_VIEW_POPPED_IN", (args) => {
+      // The popped-out window was closed — its view has been re-docked into the
+      // main window. Restore its chip and bring it to the front.
+      const viewId = args[0];
+      dispatch(markPoppedIn(viewId));
+      dispatch(selectTab(viewId));
+    });
     window.kenku.on("BROWSER_VIEW_CLOSE_TAB", async () => {
       const tabId = tabs.selectedTab;
       // Don't close the kenku player tab
@@ -177,6 +185,7 @@ export function Tabs() {
       window.kenku.removeAllListeners("BROWSER_VIEW_MEDIA_STARTED_PLAYING");
       window.kenku.removeAllListeners("BROWSER_VIEW_MEDIA_PAUSED");
       window.kenku.removeAllListeners("BROWSER_VIEW_NEW_TAB");
+      window.kenku.removeAllListeners("BROWSER_VIEW_POPPED_IN");
       window.kenku.removeAllListeners("BROWSER_VIEW_CLOSE_TAB");
     };
   }, [player.tab.id, tabs]);

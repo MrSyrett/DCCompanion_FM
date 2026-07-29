@@ -23,7 +23,8 @@ type Channel =
   | "BROWSER_VIEW_NEW_TAB"
   | "BROWSER_VIEW_CLOSE_TAB"
   | "PLAYER_REMOTE_ENABLED"
-  | "FOCUS_MODE_TOGGLE";
+  | "FOCUS_MODE_TOGGLE"
+  | "BROWSER_VIEW_POPPED_IN";
 
 const validChannels: Channel[] = [
   "ERROR",
@@ -45,6 +46,7 @@ const validChannels: Channel[] = [
   "BROWSER_VIEW_CLOSE_TAB",
   "PLAYER_REMOTE_ENABLED",
   "FOCUS_MODE_TOGGLE",
+  "BROWSER_VIEW_POPPED_IN",
 ];
 
 // Capture audio when new views are loaded
@@ -117,6 +119,9 @@ const api = {
   },
   reload: (id: number) => {
     viewManager.reload(id);
+  },
+  popoutBrowserView: (id: number) => {
+    viewManager.popoutBrowserView(id);
   },
   on: (channel: Channel, callback: (...args: any[]) => any) => {
     if (validChannels.includes(channel)) {

@@ -8,6 +8,8 @@ export interface Tab {
   /** The number of media tracks playing on this tab */
   playingMedia: number;
   muted: boolean;
+  /** True while this tab's web view lives in its own popped-out OS window */
+  poppedOut?: boolean;
 }
 
 export interface TabsState {
@@ -69,6 +71,16 @@ export const tabsSlice = createSlice({
       state.tabs.allIds.splice(oldIndex, 1);
       state.tabs.allIds.splice(newIndex, 0, action.payload.active);
     },
+    markPoppedOut: (state, action: PayloadAction<number>) => {
+      if (action.payload in state.tabs.byId) {
+        state.tabs.byId[action.payload].poppedOut = true;
+      }
+    },
+    markPoppedIn: (state, action: PayloadAction<number>) => {
+      if (action.payload in state.tabs.byId) {
+        state.tabs.byId[action.payload].poppedOut = false;
+      }
+    },
     increaseTabPlayingMedia: (state, action: PayloadAction<number>) => {
       if (action.payload in state.tabs.byId) {
         state.tabs.byId[action.payload].playingMedia += 1;
@@ -91,6 +103,8 @@ export const {
   selectTab,
   editTab,
   moveTab,
+  markPoppedOut,
+  markPoppedIn,
   increaseTabPlayingMedia,
   decreaseTabPlayingMedia,
 } = tabsSlice.actions;
