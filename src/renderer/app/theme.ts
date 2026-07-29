@@ -1,30 +1,39 @@
 import createTheme, { ThemeOptions } from "@mui/material/styles/createTheme";
 
+// Dungeon Crawler's Companion look: near-black panels, gold accent, deep red for
+// secondary, matching the site's dark/gold Cinzel theme.
 export const themeOptions: ThemeOptions = {
   palette: {
     mode: "dark",
     primary: {
-      main: "#bb99ff",
+      main: "#c8a020", // gold
     },
     secondary: {
-      main: "#ee99ff",
+      main: "#b03030", // red
     },
     background: {
-      paper: "#222639",
-      default: "#1e2231",
+      paper: "#141416",
+      default: "#0d0d0f",
     },
+    text: {
+      primary: "#e8e8e4",
+      secondary: "#8a8a93",
+    },
+    divider: "#2e2e34",
   },
   shape: {
-    borderRadius: 16,
+    borderRadius: 6,
+  },
+  typography: {
+    fontFamily: '"Montserrat", system-ui, -apple-system, "Segoe UI", sans-serif',
+    h1: { fontFamily: '"Cinzel", Georgia, serif' },
+    h2: { fontFamily: '"Cinzel", Georgia, serif' },
+    h3: { fontFamily: '"Cinzel", Georgia, serif' },
+    h4: { fontFamily: '"Cinzel", Georgia, serif' },
+    h5: { fontFamily: '"Cinzel", Georgia, serif' },
+    h6: { fontFamily: '"Cinzel", Georgia, serif' },
   },
   components: {
-    MuiAppBar: {
-      styleOverrides: {
-        root: {
-          color: "secondary",
-        },
-      },
-    },
     MuiButtonBase: {
       defaultProps: {
         disableRipple: true,
@@ -50,10 +59,10 @@ export const themeOptions: ThemeOptions = {
       styleOverrides: {
         root: {
           margin: "4px 8px",
-          borderRadius: "16px",
+          borderRadius: "6px",
         },
         dense: {
-          borderRadius: "12px",
+          borderRadius: "6px",
         },
       },
     },

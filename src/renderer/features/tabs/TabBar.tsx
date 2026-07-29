@@ -32,7 +32,6 @@ import { SortableItem } from "../../common/SortableItem";
 import { WindowControls } from "../../common/WindowControls";
 import { showWindowControls } from "../../common/showWindowControls";
 import { PlayerTab } from "../player/PlayerTab";
-import { AddTabButton } from "./AddTabButton";
 import { TabItem } from "./TabItem";
 
 export function TabBar() {
@@ -175,9 +174,6 @@ export function TabBar() {
           </SortableContext>
         </DndContext>
       </List>
-      <Box>
-        <AddTabButton />
-      </Box>
       <Box sx={{ WebkitAppRegion: "no-drag" }}>
         <Tooltip title="Focus mode — hide controls (F11)">
           <IconButton

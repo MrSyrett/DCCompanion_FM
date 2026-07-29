@@ -2,16 +2,16 @@ const path = require("path");
 
 const config = {
   packagerConfig: {
-    executableName: "kenku-fm",
+    executableName: "dungeon-crawlers-companion",
     out: "./out",
     icon: "./src/assets/icon",
-    appBundleId: "com.kenku.fm",
+    appBundleId: "com.dccompanion.desktop",
   },
   makers: [
     {
       name: "@electron-forge/maker-squirrel",
       config: {
-        name: "kenku_fm",
+        name: "dungeon_crawlers_companion",
         setupIcon: path.join(__dirname, "src", "assets", "setup.ico"),
         loadingGif: path.join(__dirname, "src", "assets", "loading.gif"),
       },
@@ -19,9 +19,9 @@ const config = {
     {
       name: "@electron-forge/maker-deb",
       config: {
-        name: "kenku_fm",
-        productName: "Kenku FM",
-        homepage: "https://kenku.fm",
+        name: "dungeon-crawlers-companion",
+        productName: "Dungeon Crawler's Companion",
+        homepage: "https://www.dccompanion.com",
         icon: path.join(__dirname, "src", "assets", "icons", "256x256.png"),
       },
     },
@@ -32,9 +32,9 @@ const config = {
     {
       name: "@electron-forge/maker-rpm",
       config: {
-        name: "kenku_fm",
-        productName: "Kenku FM",
-        homepage: "https://kenku.fm",
+        name: "dungeon-crawlers-companion",
+        productName: "Dungeon Crawler's Companion",
+        homepage: "https://www.dccompanion.com",
         icon: path.join(__dirname, "src", "assets", "icons", "256x256.png"),
       },
     },

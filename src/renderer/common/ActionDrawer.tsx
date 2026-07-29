@@ -6,7 +6,6 @@ import SettingsIcon from "@mui/icons-material/SettingsRounded";
 import { Toolbar, Stack, Typography, Link } from "@mui/material";
 import { OutputListItems } from "../features/output/OutputListItems";
 import { InputListItems } from "../features/input/InputListItems";
-import { BookmarkListItems } from "../features/bookmarks/BookmarkListItems";
 import { Settings } from "../features/settings/Settings";
 
 import { RootState } from "../app/store";
@@ -73,7 +72,6 @@ export function ActionDrawer() {
         </Toolbar>
         <Box sx={{ overflowY: "auto" }} ref={scrollRef} {...hideScrollbar}>
           <Stack>
-            <BookmarkListItems />
             {settings.externalInputsEnabled && <InputListItems />}
             <OutputListItems />
             {connection.status === "disconnected" && (
