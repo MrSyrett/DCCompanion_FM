@@ -23,10 +23,11 @@ import Stack from "@mui/material/Stack";
 import IconButton from "@mui/material/IconButton";
 import Tooltip from "@mui/material/Tooltip";
 import FullscreenRoundedIcon from "@mui/icons-material/FullscreenRounded";
+import TuneRoundedIcon from "@mui/icons-material/TuneRounded";
 
 import { RootState } from "../../app/store";
 import { moveTab, Tab } from "./tabsSlice";
-import { setFocusMode } from "../settings/settingsSlice";
+import { setFocusMode, togglePanel } from "../settings/settingsSlice";
 
 import { SortableItem } from "../../common/SortableItem";
 import { WindowControls } from "../../common/WindowControls";
@@ -174,8 +175,17 @@ export function TabBar() {
           </SortableContext>
         </DndContext>
       </List>
-      <Box sx={{ WebkitAppRegion: "no-drag" }}>
-        <Tooltip title="Focus mode — hide controls (F11)">
+      <Box sx={{ WebkitAppRegion: "no-drag", display: "flex" }}>
+        <Tooltip title="Show/hide controls">
+          <IconButton
+            aria-label="Toggle controls panel"
+            size="small"
+            onClick={() => dispatch(togglePanel())}
+          >
+            <TuneRoundedIcon fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Focus mode — hide everything (F11)">
           <IconButton
             aria-label="Enter focus mode"
             size="small"

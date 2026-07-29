@@ -21,6 +21,14 @@ export interface SettingsState {
    * start up with no way to reach the controls (toggle with F11).
    */
   focusMode: boolean;
+  /**
+   * Whether the controls panel (Discord outputs + settings drawer) is open.
+   * When closed, the web view slides left to fill the whole area (minus the top
+   * bar) so the site gets maximum space; when open, the view insets by the drawer
+   * width to reveal the panel. It's a collapse rather than a true float because
+   * the site is a native view that DOM can't overlay.
+   */
+  panelOpen: boolean;
 }
 
 const initialState: SettingsState = {
@@ -34,6 +42,7 @@ const initialState: SettingsState = {
   multipleOutputsEnabled: false,
   streamingMode: "performance",
   focusMode: false,
+  panelOpen: false,
 };
 
 export const connectionSlice = createSlice({
@@ -73,6 +82,12 @@ export const connectionSlice = createSlice({
     toggleFocusMode: (state) => {
       state.focusMode = !state.focusMode;
     },
+    setPanelOpen: (state, action: PayloadAction<boolean>) => {
+      state.panelOpen = action.payload;
+    },
+    togglePanel: (state) => {
+      state.panelOpen = !state.panelOpen;
+    },
   },
 });
 
@@ -88,6 +103,8 @@ export const {
   setStreamingMode,
   setFocusMode,
   toggleFocusMode,
+  setPanelOpen,
+  togglePanel,
 } = connectionSlice.actions;
 
 export default connectionSlice.reducer;

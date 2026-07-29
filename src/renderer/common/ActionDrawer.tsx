@@ -25,8 +25,20 @@ export function ActionDrawer() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const hideScrollbar = useHideScrollbar(scrollRef);
 
+  // Collapsible: when the panel is closed the drawer is hidden (but stays mounted,
+  // so its one-time effects — Discord connect, audio capture — are never re-run)
+  // and the web view reclaims the space. Toggle lives in the top bar (see TabBar).
+  const panelOpen = settings.panelOpen;
+
   return (
-    <Box component="nav" sx={{ width: drawerWidth, flexShrink: 0 }}>
+    <Box
+      component="nav"
+      sx={{
+        width: panelOpen ? drawerWidth : 0,
+        flexShrink: 0,
+        display: panelOpen ? "block" : "none",
+      }}
+    >
       <Drawer
         variant="permanent"
         sx={{

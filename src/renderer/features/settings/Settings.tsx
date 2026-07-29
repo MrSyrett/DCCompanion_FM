@@ -26,13 +26,10 @@ import { useSelector, useDispatch } from "react-redux";
 import { setStatus } from "../connection/connectionSlice";
 import {
   setDiscordToken,
-  setExternalInputsEnabled,
-  setMultipleInputsEnabled,
   setMultipleOutputsEnabled,
   setRemoteEnabled,
   setRemoteAddress,
   setRemotePort,
-  setURLBarEnabled,
   setStreamingMode,
   StreamingMode,
 } from "./settingsSlice";
@@ -255,18 +252,6 @@ export function Settings({ open, onClose }: SettingsProps) {
     </FormControl>
   );
 
-  function handleShowControlsToggle() {
-    dispatch(setURLBarEnabled(!settings.urlBarEnabled));
-  }
-
-  function handleExternalInputsToggle() {
-    dispatch(setExternalInputsEnabled(!settings.externalInputsEnabled));
-  }
-
-  function handleMultipleInputsToggle() {
-    dispatch(setMultipleInputsEnabled(!settings.multipleInputsEnabled));
-  }
-
   function handleMultipleOutputsToggle() {
     dispatch(setMultipleOutputsEnabled(!settings.multipleOutputsEnabled));
   }
@@ -284,56 +269,12 @@ export function Settings({ open, onClose }: SettingsProps) {
         <FormControlLabel
           control={
             <Switch
-              checked={settings.urlBarEnabled}
-              onChange={handleShowControlsToggle}
-            />
-          }
-          sx={{ marginLeft: "-8px" }}
-          label={<Typography variant="caption">Show Tab URL Bar</Typography>}
-        />
-      </FormGroup>
-      <FormGroup>
-        <FormControlLabel
-          control={
-            <Switch
               checked={settings.multipleOutputsEnabled}
               onChange={handleMultipleOutputsToggle}
             />
           }
           sx={{ marginLeft: "-8px" }}
           label={<Typography variant="caption">Multiple Outputs</Typography>}
-        />
-      </FormGroup>
-      <FormGroup>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={settings.externalInputsEnabled}
-              onChange={handleExternalInputsToggle}
-            />
-          }
-          sx={{ marginLeft: "-8px" }}
-          label={<Typography variant="caption">External Inputs</Typography>}
-        />
-      </FormGroup>
-      <FormGroup>
-        <FormControlLabel
-          control={
-            <Switch
-              checked={settings.multipleInputsEnabled}
-              onChange={handleMultipleInputsToggle}
-            />
-          }
-          disabled={!settings.externalInputsEnabled}
-          sx={{ marginLeft: "-8px" }}
-          label={
-            <Typography
-              variant="caption"
-              sx={{ opacity: settings.externalInputsEnabled ? undefined : 0.5 }}
-            >
-              Multiple Inputs
-            </Typography>
-          }
         />
       </FormGroup>
       <Button

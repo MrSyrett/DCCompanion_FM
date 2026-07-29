@@ -183,7 +183,7 @@ export function Tabs() {
 
   useEffect(() => {
     if (tabs.selectedTab) {
-      const bounds = getBounds(settings.focusMode);
+      const bounds = getBounds(settings.focusMode, settings.panelOpen);
       window.kenku.setBrowserViewBounds(
         tabs.selectedTab,
         bounds.x,
@@ -192,7 +192,13 @@ export function Tabs() {
         bounds.height,
       );
     }
-  }, [settings.urlBarEnabled, settings.focusMode, isPlayer, tabs.selectedTab]);
+  }, [
+    settings.urlBarEnabled,
+    settings.focusMode,
+    settings.panelOpen,
+    isPlayer,
+    tabs.selectedTab,
+  ]);
 
   function handleURLChange(url: string) {
     dispatch(editTab({ id: tabs.selectedTab, url }));

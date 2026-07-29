@@ -3,11 +3,13 @@ import { drawerWidth } from "../../common/ActionDrawer";
 /**
  * Bounds for the active web view.
  *
- * In focus mode the chrome (drawer + tab/URL bar) is hidden, so the view fills
- * the entire window. Otherwise it sits to the right of the drawer and below the
- * controls, as normal.
+ * - Focus mode: the view fills the whole window (chrome hidden entirely).
+ * - Panel open: the view insets by the drawer width to reveal the controls panel.
+ * - Panel closed (default): the view slides left to x:0 so the site gets the full
+ *   width, with only the top bar above it. (The panel can't truly float over the
+ *   view — it's a native layer — so closing it reclaims the space.)
  */
-export function getBounds(focus = false) {
+export function getBounds(focus = false, panelOpen = false) {
   if (focus) {
     return {
       x: 0,
@@ -18,10 +20,11 @@ export function getBounds(focus = false) {
   }
   const controls = document.getElementById("controls");
   const y = controls?.clientHeight || 0;
+  const x = panelOpen ? drawerWidth : 0;
   return {
-    x: drawerWidth,
+    x,
     y,
-    width: window.innerWidth - drawerWidth,
+    width: window.innerWidth - x,
     height: window.innerHeight - y,
   };
 }
