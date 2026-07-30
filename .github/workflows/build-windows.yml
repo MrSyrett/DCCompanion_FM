@@ -1,14 +1,36 @@
 name: Build Windows Installer
 
+# Two ways this runs:
+#
+#  • Push to main/master  → builds the installer and uploads it as a throwaway
+#    "artifact" (a build check; only visible to logged-in users, auto-deletes).
+#
+#  • "Run workflow" button (Actions tab) → asks you for a version number, builds
+#    the installer, and PUBLISHES it as a public GitHub Release that anyone can
+#    download. This is how you cut a release people can install.
+#
+# After a release runs, the always-latest download link is:
+#   https://github.com/MrSyrett/kenku-fm-focus/releases/latest/download/Dungeon-Crawlers-Companion-Setup.exe
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to release, e.g. 1.0.0 (no leading v). Creates tag v<version>."
+        required: true
+        default: "1.0.0"
   push:
     branches: [main, master]
+
+# Needed so the release step can create tags/releases with the built-in token.
+permissions:
+  contents: write
 
 jobs:
   build-windows:
     runs-on: windows-2022
     env:
+      # The castlabs (Widevine) Electron build downloads from here.
+      # Taken from the project's .env — required or `npm install` can't fetch Electron.
       ELECTRON_MIRROR: https://github.com/castlabs/electron-releases/releases/download/
     steps:
       - name: Check out the code
@@ -25,12 +47,48 @@ jobs:
       - name: Build the Windows installer
         run: npx electron-forge make
 
+      # Collect the build output into a release/ folder with a STABLE filename for
+      # the installer, so the "latest/download/…" link never changes between
+      # versions. The .nupkg + RELEASES files are included too (they enable
+      # Squirrel auto-update later; harmless if unused).
+      - name: Stage release assets
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force -Path release | Out-Null
+          $exe = Get-ChildItem -Path out/make -Recurse -Filter *.exe | Select-Object -First 1
+          if (-not $exe) { throw "No installer .exe found under out/make" }
+          Copy-Item $exe.FullName "release/Dungeon-Crawlers-Companion-Setup.exe"
+          Get-ChildItem -Path out/make -Recurse -Filter *.nupkg | ForEach-Object { Copy-Item $_.FullName "release/" }
+          $rel = Get-ChildItem -Path out/make -Recurse -Filter RELEASES | Select-Object -First 1
+          if ($rel) { Copy-Item $rel.FullName "release/" }
+          Write-Host "Staged files:"
+          Get-ChildItem release | Format-Table Name, Length
+
+      # Always upload the build as an artifact (the CI safety net for pushes).
       - name: Upload the installer as a downloadable artifact
         uses: actions/upload-artifact@v4
         with:
-          name: DCCompanion-FM
-          path: |
-            out/make/**/*.exe
-            out/make/**/*.nupkg
-            out/make/**/RELEASES
+          name: DungeonCrawlersCompanion-Windows
+          path: release/**
           if-no-files-found: error
+
+      # Only when you press "Run workflow" and give a version: publish a public
+      # Release with the installer attached and mark it as Latest.
+      - name: Publish GitHub Release
+        if: github.event_name == 'workflow_dispatch'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ github.event.inputs.version }}
+          name: Dungeon Crawler's Companion v${{ github.event.inputs.version }}
+          make_latest: true
+          body: |
+            **Dungeon Crawler's Companion — Desktop** · Windows installer
+
+            Download **Dungeon-Crawlers-Companion-Setup.exe** below and run it.
+
+            The installer is unsigned, so Windows SmartScreen will warn you the
+            first time. Click **More info → Run anyway** to install.
+
+            Always-latest download link:
+            https://github.com/MrSyrett/kenku-fm-focus/releases/latest/download/Dungeon-Crawlers-Companion-Setup.exe
+          files: release/**
