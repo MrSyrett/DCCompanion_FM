@@ -39,19 +39,6 @@ const config = {
       },
     },
   ],
-  publishers: [
-    {
-      name: "@electron-forge/publisher-github",
-      config: {
-        repository: {
-          owner: "owlbear-rodeo",
-          name: "kenku-fm",
-        },
-        prerelease: false,
-        draft: false,
-      },
-    },
-  ],
   plugins: [
     {
       name: "@electron-forge/plugin-webpack",
