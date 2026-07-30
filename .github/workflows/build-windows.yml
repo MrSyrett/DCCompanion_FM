@@ -28,7 +28,7 @@ jobs:
       - name: Upload the installer as a downloadable artifact
         uses: actions/upload-artifact@v4
         with:
-          name: KenkuFM-FocusMode-Windows
+          name: DCCompanion-FM
           path: |
             out/make/**/*.exe
             out/make/**/*.nupkg
