@@ -118,7 +118,26 @@ export class BrowserViewManagerMain {
     this.views[id].webContents.on("media-paused", () => {
       event.reply("BROWSER_VIEW_MEDIA_PAUSED", id);
     });
-    this.views[id].webContents.setWindowOpenHandler(({ url }) => {
+    this.views[id].webContents.setWindowOpenHandler(({ url, frameName }) => {
+      // The GM screen pops a tabletop out to its own window via
+      // window.open(url, "gm-vtt-popout" | "gmvtt", ...). Let THOSE become real OS
+      // windows sharing this view's session — so the first-party map stays signed
+      // in and keeps hosting the live game on a second monitor. Denying it (the
+      // default below) turned the pop-out into a new in-app tab and broke the
+      // players' connection.
+      if (frameName === "gm-vtt-popout" || frameName === "gmvtt") {
+        return {
+          action: "allow",
+          overrideBrowserWindowOptions: {
+            width: 1500,
+            height: 950,
+            backgroundColor: "#0a0c10",
+            autoHideMenuBar: true,
+            title: "Dungeon Crawler's Companion — Tabletop",
+          },
+        };
+      }
+      // Everything else opens as a new in-app tab, as before.
       event.reply("BROWSER_VIEW_NEW_TAB", url);
       return { action: "deny" };
     });
