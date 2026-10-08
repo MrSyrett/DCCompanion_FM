@@ -8,15 +8,21 @@ async function createApp(version, keypairAlias, certfile) {
 
   try {
     const params = {
-      appDirectory: path.join(parent, "out", `Kenku FM-win32-${process.arch}`),
+      appDirectory: path.join(
+        parent,
+        "out",
+        `Dungeon Crawler's Companion-win32-${process.arch}`
+      ),
       outputDirectory: path.join(parent, "out", "windows"),
       loadingGif: path.join(parent, "src", "assets", "loading.gif"),
       setupIcon: path.join(parent, "src", "assets", "setup.ico"),
       iconUrl: path.join(parent, "src", "assets", "setup.ico"),
       noMsi: true,
-      exe: "kenku-fm.exe",
-      name: `kenku-fm-win32-${process.arch}`,
-      setupExe: `kenku-fm-win32-${process.arch}-${version}.exe`,
+      exe: "dungeon-crawlers-companion.exe",
+      // Must match the maker-squirrel `name` in forge.config.js so Squirrel
+      // treats both build paths as the same app (same install dir + shortcut).
+      name: "dungeon_crawlers_companion",
+      setupExe: `dungeon-crawlers-companion-win32-${process.arch}-${version}.exe`,
     };
 
     // Only sign x64 builds until DigiCert SMCTL supports ARM64

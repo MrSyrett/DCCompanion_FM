@@ -146,13 +146,20 @@ if (!hasSingleInstanceLock) {
   });
 
   app.on("second-instance", () => {
-    // Someone tried to run a second instance, we should focus our window.
-    if (window) {
-      if (window.isMinimized()) {
-        window.restore();
-      }
-      window.focus();
+    // Someone tried to run a second instance. Focus our existing window, or
+    // re-create it if it was closed. Without the re-create, if the first
+    // process ever lingers after its window is closed (e.g. a Discord voice
+    // connection or Widevine keeping the process alive), the single-instance
+    // lock stays held and every later launch quietly quits with no window to
+    // focus -- i.e. "opens once, then won't open again".
+    if (!window || window.isDestroyed()) {
+      window = createWindow();
+      return;
     }
+    if (window.isMinimized()) {
+      window.restore();
+    }
+    window.focus();
   });
 
   // Quit when all windows are closed, except on macOS. There, it's common

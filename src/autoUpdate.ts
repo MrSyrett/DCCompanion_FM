@@ -1,42 +1,29 @@
-import { app, autoUpdater, BrowserWindow } from "electron";
+import { BrowserWindow } from "electron";
 
-function checkForAppUpdates() {
-  if (process.platform === "win32") {
-    const squirrelCommand = process.argv[1];
-    if (squirrelCommand === "--squirrel-firstrun") {
-      return;
-    }
-  }
-
-  if (app.isReady()) {
-    autoUpdater.checkForUpdates();
-  }
-}
-
-export function runAutoUpdate(window: BrowserWindow) {
-  if (process.platform === "win32" || process.platform == "darwin") {
-    const server = "https://download.kenku.fm";
-    let url = `${server}/update/${process.platform}/${process.arch}/${app.getVersion()}`;
-
-    autoUpdater.setFeedURL({ url });
-
-    const handleError = () => {};
-    const handleUpdateDownloaded = () => {
-      window.webContents.send("MESSAGE", "Update Available. Restart to apply.");
-    };
-
-    autoUpdater.on("error", handleError);
-    autoUpdater.on("update-downloaded", handleUpdateDownloaded);
-
-    // Check for updates every 15 minutes
-    const interval = setInterval(() => {
-      checkForAppUpdates();
-    }, 900000);
-
-    window.on("close", () => {
-      autoUpdater.off("error", handleError);
-      autoUpdater.off("update-downloaded", handleUpdateDownloaded);
-      clearInterval(interval);
-    });
-  }
+// Auto-update is intentionally disabled.
+//
+// This fork previously pointed Squirrel's feed at Kenku FM's own release
+// server (https://download.kenku.fm). On Windows, Electron's `autoUpdater`
+// IS Squirrel, so the app periodically pulled GENUINE Kenku FM builds and
+// installed them over this fork -- which is what produced a stray "Kenku FM"
+// desktop shortcut and left the install in a broken state that wouldn't
+// relaunch.
+//
+// This fork has no update feed of its own, so the safe behaviour is to not
+// check for updates at all.
+//
+// To enable updates LATER against our own GitHub releases instead, the CI
+// workflow already attaches the Squirrel `.nupkg` + `RELEASES` assets, so you
+// can use update.electronjs.org, e.g.:
+//
+//   import { app, autoUpdater } from "electron";
+//   const feed =
+//     `https://update.electronjs.org/MrSyrett/kenku-fm-focus/` +
+//     `${process.platform}/${app.getVersion()}`;
+//   autoUpdater.setFeedURL({ url: feed });
+//   autoUpdater.checkForUpdates();
+//
+// Never point this back at download.kenku.fm.
+export function runAutoUpdate(_window: BrowserWindow): void {
+  return;
 }
